@@ -2,8 +2,7 @@ import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { Hono } from "hono";
 import { verify } from "hono/jwt";
-
-
+import createBlogInput from '@ajaytumulaa/medium-common'
 
 export const blogRouter = new Hono<{
     Bindings: {
@@ -11,18 +10,16 @@ export const blogRouter = new Hono<{
         JWT_SECRET: string,
     }, 
     Variables: {
-        userId: string,
+        userId: string;
     }
 }>();
 
-
     blogRouter.use('/*', async (c, next) => {
-    
         const authHeader = c.req.header("authorization") || "";
+        const user = await verify(authHeader, c.env.JWT_SECRET);
         try {
-            const user = await verify(authHeader, c.env.JWT_SECRET);
             if(user) {
-                c.set("userId", user.id)
+                c.set('userId', user.id);
                 await next();
             } else {
                 c.status(403);
@@ -31,14 +28,20 @@ export const blogRouter = new Hono<{
         } catch(e) {
             c.status(403);
             return c.json({ message: "You are not logged in"})
-        }
-        
-        
+        } 
     })
 
   blogRouter.post('/', async(c) => {
     const body = await c.req.json();
-    const authorId = c.get("userId")
+    const authorId = c.get("userId");
+    const { success } = createBlogInput.safeParse(body);
+
+    if(!success) {
+        c.status(411);
+        return c.json({
+            message: "Inputs not correct"
+        })
+    }
 
     const prisma = new PrismaClient({
         datasourceUrl:  c.env.DATABASE_URL
