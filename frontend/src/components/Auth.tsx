@@ -2,15 +2,15 @@
 import {Link, useNavigate} from "react-router-dom"
 import { InputBox } from "../ui-kit/Input"
 import { useState } from "react"
-import { SignupInput } from  "@ajaytumulaa/medium-common"
+import { SignupInput } from  "@ajaytumulaa/common-app"
 import { BACKEND_URL } from "../config"
 import axios from "axios";
 
-export const Auth = ({type}: {type: "signup" | "signin"}) => {
+export const Auth = ({ type }: { type: "signup" | "signin" }) => {
     const navigate = useNavigate()
 
     const [postInputs, setPostInputs] = useState<SignupInput>({
-        email: "",
+        username: "",
         name: "",
         password: ""
     })
@@ -19,10 +19,11 @@ export const Auth = ({type}: {type: "signup" | "signin"}) => {
         try {
             const response = await axios.post(`${BACKEND_URL}/api/v1/user/${type === "signup" ? "signup" : "signin"}`, postInputs);
             const jwt = response.data;
-            localStorage.setItem("token", jwt);
+            console.log(jwt)
+            localStorage.setItem("token", jwt)
             navigate("/blogs")
         } catch(e) {
-
+            alert("Error while signup")
         }
         
     }
@@ -38,10 +39,10 @@ export const Auth = ({type}: {type: "signup" | "signin"}) => {
                     <Link className="pl-2 underline" to={type === "signin" ? "/signup" : "/signin"}>
                     {type === "signin" ? "Sign up" : "Sign in"}</Link>
                 </div>
-                <InputBox type="Username" placeholder="johndoe@gmail.com" label="Email" onChange={(e) => {
+                <InputBox type="" placeholder="johndoe@gmail.com" label="Username" onChange={(e) => {
                     setPostInputs(c => ({
                         ...c,
-                        email: e.target.value
+                        username: e.target.value
                     }))
                 }}/>
                 <InputBox type="password" placeholder="" label="Password" onChange={(e) => {
